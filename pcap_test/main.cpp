@@ -1,5 +1,6 @@
 #include <pcap.h>
 #include <stdio.h>
+#include <string.h>
 
 void usage() {
   printf("syntax: pcap_test <interface>\n");
@@ -26,21 +27,29 @@ int main(int argc, char* argv[]) {
     int res = pcap_next_ex(handle, &header, &packet);
     if (res == 0) continue;
     if (res == -1 || res == -2) break;
-    char dmac[6] = NULL, smac[6] = NULL;
-    char dip[5] = NULL, sip[5] = NULL;
-    char dport[3] = NULL, sport[3] = NULL;
-    memcpy(dmac, packet, 5); dmac[5] = 0;
-    memcpy(smac, packet[6], 5); smac[5] = 0;
-    memcpy(dip, packet[26], 4); dip[4] = 0;
-    memcpy(sip, packet[30], 4); sip[4] = 0;
-    memcpy(dport, packet[34], 2); dport[2] = 0;
-    memcpy(sport, packet[34], 2); sport[2] = 0;
-    printf("eth.src_mac: %x\n", smac);
-    printf("eth.dest_mac: %x\n", dmac);
-    printf("ip.src_ip: %s\n", sip);
-    printf("ip.dest_ip: %s\n", dip);
-    printf("tcp.src_port: %d\n", sport);
-    printf("tcp.dest_port: %d\n", dport);
+    u_char dmac[6], smac[6];
+    u_char dip[4], sip[4];
+    u_char dport[2], sport[2];
+    memcpy(dmac, packet, 6);
+    memcpy(smac, &packet[6], 6);
+    memcpy(dip, &packet[30], 4);
+    memcpy(sip, &packet[26], 4);
+    memcpy(dport, &packet[36], 2);
+    memcpy(sport, &packet[34], 2);
+    printf("\neth.src_mac: ");
+    for (int i=0; i < 5; i++) printf("%02x:", smac[i]);
+    printf("%02x\n", smac[5]);
+    printf("eth.dest_mac: ");
+    for (int i=0; i < 5; i++) printf("%02x:", dmac[i]);
+    printf("%02x\n", dmac[5]);
+    printf("ip.src_ip: ");
+    for (int i=0; i < 3; i++) printf("%d.", sip[i]);
+    printf("%d\n", sip[3]);
+    printf("ip.dest_ip: ");
+    for (int i=0; i < 3; i++) printf("%d.", dip[i]);
+    printf("%d\n", dip[3]);
+    printf("tcp.src_port: %d\n", (sport[0]*255 + sport[1]));
+    printf("tcp.dest_port: %d\n", (dport[0]*255 + dport[1]));
   }
 
   pcap_close(handle);
