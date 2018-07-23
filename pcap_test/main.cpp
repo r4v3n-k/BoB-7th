@@ -30,12 +30,14 @@ int main(int argc, char* argv[]) {
     u_char dmac[6], smac[6];
     u_char dip[4], sip[4];
     u_char dport[2], sport[2];
+    u_char data[16];
     memcpy(dmac, packet, 6);
     memcpy(smac, &packet[6], 6);
     memcpy(dip, &packet[30], 4);
     memcpy(sip, &packet[26], 4);
     memcpy(dport, &packet[36], 2);
     memcpy(sport, &packet[34], 2);
+    memcpy(data, &packet[53], 16);
     printf("\neth.src_mac: ");
     for (int i=0; i < 5; i++) printf("%02x:", smac[i]);
     printf("%02x\n", smac[5]);
@@ -50,6 +52,10 @@ int main(int argc, char* argv[]) {
     printf("%d\n", dip[3]);
     printf("tcp.src_port: %d\n", (sport[0]*255 + sport[1]));
     printf("tcp.dest_port: %d\n", (dport[0]*255 + dport[1]));
+    printf("data: ");
+    for (int i = 0; i < 16; i++) printf("%x", data[i]);
+    printf("\n\n");
+
   }
 
   pcap_close(handle);
