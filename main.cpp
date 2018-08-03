@@ -12,16 +12,18 @@ typedef struct ethernet_header {
 } my_ethhdr;
 
 typedef struct ip_header {
-	uint8_t ver_and_h_len;
+	uint8_t ip_version : 4;
+	uint8_t hdr_len : 4;
 	uint8_t tos; // type of service
 	uint16_t total_length;
-	uint16_t identi;
-	uint16_t flags;
+	uint16_t identifier;
+	uint16_t dummy;
 	uint8_t ttl;
 	uint8_t protocol;
 	uint16_t checksum;
 	uint32_t src_ip;
 	uint32_t dest_ip;
+	uint32_t options;
 } my_iphdr;
 
 typedef struct tcp_header {
@@ -79,40 +81,36 @@ int main(int argc, char* argv[]) {
 		if (res == -1 || res == -2) break;
 
 		eth_hdr = (my_ethhdr*) packet;
-		ip_hdr = (my_iphdr*)(packet + 14);
-		tcp_hdr = (my_tcphdr*)(ip_hdr + (ip_hdr->ver_and_h_len & 0x00FF) * 4);
+		ip_hdr = (my_iphdr*)(eth_hdr + sizeof(eth_hdr));
+		tcp_hdr = (my_tcphdr*)(ip_hdr + ip_hdr->hdr_len * 4);
 		data = (u_char*)(tcp_hdr + tcp_hdr->offset * 4);
 
 		if (ntohs(eth_hdr->ether_type) == ETHERTYPE_IP) {
-			if (ip_hdr->protocol == IPPROTO_TCP) {
-	  	 		printf("--------------------------------------\n");
-				printf("eth.src_mac: ");
-				for (int i=0; i < 5; i++) printf("%02x:", eth_hdr->src_mac[i]);
-				printf("%02x\n", eth_hdr->src_mac[5]);
-				printf("eth.dest_mac: ");
-				for (int i=0; i < 5; i++) printf("%02x:", eth_hdr->dest_mac[i]);
-				printf("%02x\n", eth_hdr->dest_mac[5]);
+	  	 	printf("--------------------------------------\n");
+			printf("eth.src_mac: ");
+			for (int i=0; i < 5; i++) printf("%02x:", eth_hdr->src_mac[i]);
+			printf("%02x\n", eth_hdr->src_mac[5]);
+			printf("eth.dest_mac: ");
+			for (int i=0; i < 5; i++) printf("%02x:", eth_hdr->dest_mac[i]);
+			printf("%02x\n", eth_hdr->dest_mac[5]);
 
-		  		printf("ip.src_ip: ");
-				ip_hdr->src_ip = my_ntohl(ip_hdr->src_ip);
-				printf("%d.", (ip_hdr->src_ip & 0xFF000000) >> 24);
-				printf("%d.", (ip_hdr->src_ip & 0x00FF0000) >> 16);
-				printf("%d.", (ip_hdr->src_ip & 0x0000FF00) >> 8);
-				printf("%d\n", (ip_hdr->src_ip & 0x000000FF));
+		  	printf("ip.src_ip: ");
+			ip_hdr->src_ipi = my_ntohl(ip_hdr->src_ip);
+			ipaddr = (uint8_t*)&ip_hdr->src_ip;
+		  	for (int i=0; i < 3; i++) printf("%d.", ipaddr[i]);
+			printf("%d\n", ipaddr[3]);
 
-				ip_hdr->dest_ip=my_ntohl(ip_hdr->dest_ip);
-		  		printf("ip.dest_ip: ");
-				printf("%d.", (ip_hdr->dest_ip & 0xFF000000) >> 24);
-				printf("%d.", (ip_hdr->dest_ip & 0x00FF0000) >> 16);
-				printf("%d.", (ip_hdr->dest_ip & 0x0000FF00) >> 8);
-				printf("%d\n", (ip_hdr->dest_ip & 0x000000FF));
+			ip_hdr->dest_ip=my_ntohl(ip_hdr->dest_ip);
+		  	printf("ip.dest_ip: ");
+			ipaddr=(uint8_t*)&ip_hdr->dest_ip;
+			for (int i=0; i < 3; i++) printf("%d.", ipaddr[i]);
+			printf("%d\n", ipaddr[3]);
 
-		 		printf("tcp.src_port: %d\n", (tcp_hdr->src_port[0]*256+tcp_hdr->src_port[1]));
-		  		printf("tcp.dest_port: %d\n", (tcp_hdr->dest_port[0]*256 + tcp_hdr->dest_port[1]));
-		  		printf("data: ");
-				for (int i=0; data[i] && i < 16; i++) printf("%x ", data[i]);
-	  	 		printf("\n--------------------------------------\n");
-			}
+		 	printf("tcp.src_port: %d\n", (tcp_hdr->src_port[0]*256+tcp_hdr->src_port[1]));
+		  	printf("tcp.dest_port: %d\n", (tcp_hdr->dest_port[0]*256 + tcp_hdr->dest_port[1]));
+		  	printf("data: ");
+			for (int i=0; data[i] && i<16; i++) printf("%x ", data[i]);
+	  	 	printf("\n--------------------------------------\n");
 	  	}
 	}
 
