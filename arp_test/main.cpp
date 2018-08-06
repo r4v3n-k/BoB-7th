@@ -161,8 +161,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	struct pcap_pkthdr *header;
-	free(packet);
-	packet = NULL;
+	memset(packet, 0, sizeof(total_size));
 	int res = pcap_next_ex(handle, &header, ((const u_char**)&packet));
 	printf("res:%d\n", res);
 	if (res <= 0) return -1;
@@ -196,6 +195,7 @@ int main(int argc, char* argv[]) {
 
 	free(eth_hdr);
 	free(arp_pk);
+	free(packet);
 	pcap_close(handle);
 	return 0; 
 }
