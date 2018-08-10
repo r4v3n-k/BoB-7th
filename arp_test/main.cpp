@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <pcap.h>
 #include <stdint.h>
 #include <arpa/inet.h>
@@ -197,7 +196,6 @@ int main(int argc, char* argv[]) {
 				memset(packet, 0, eth_size+arp_size);
 				memcpy(packet, eth_hdr, eth_size);
 				memcpy(packet+14, arp_hdr, arp_size);
-				sleep(3);
 				if (pcap_sendpacket(handle, (const u_char*)packet, eth_size+arp_size) == -1) {
 					printf("ARP Spoofing Failure\n");
 				} else {
