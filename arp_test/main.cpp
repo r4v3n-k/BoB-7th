@@ -124,6 +124,10 @@ int main(int argc, char* argv[]) {
 	}
 	struct eth_header *eth_hdr = (struct eth_header*) malloc(sizeof(struct eth_header));
 	struct arp_header *arp_hdr = (struct arp_header*) malloc(sizeof(struct arp_header));
+	if (eth_hdr == NULL || arp_hdr == NULL) {
+		printf("malloc() failed...\n");
+		return -1;
+	}
 	
 	uint32_t sip = my_inet_aton(argv[2]);
 	uint32_t dip = my_inet_aton(argv[3]);
@@ -149,6 +153,10 @@ int main(int argc, char* argv[]) {
 	int eth_size = sizeof(*eth_hdr);
 	int arp_size = sizeof(*arp_hdr);
 	u_char* packet = (u_char*) malloc(sizeof(eth_size+arp_size));
+	if (packet == NULL) {
+		printf("malloc() failed.......2\n");
+		return -1;
+	}
 	memcpy(packet, eth_hdr, eth_size);
 	memcpy(packet+14, arp_hdr, arp_size);
 	printf("ARP Request==========================================\n");
