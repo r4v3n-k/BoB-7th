@@ -227,10 +227,11 @@ int main(int argc, char* argv[]) {
 	
 	int eth_sz = sizeof(*eth_hdr);
 	int arp_sz = sizeof(*arp_hdr);
-	u_char* packet = (u_char*) malloc(sizeof(eth_sz+arp_sz));
-	if (packet == NULL) return -3;
+	u_char* packet = NULL;
 	
 	for (int i=2, j=2, _sz=eth_sz+arp_sz; j <= argc/2; i+=2, j++) {
+		packet = (u_char*) malloc(sizeof(eth_sz+arp_sz));
+		if (packet == NULL) return -3;
 		my_inet_aton(argv[i], &sender_ip);
 		arp_hdr->sender_ip = my_ip; // 실제 내 ip
 		my_inet_aton(argv[i+1], &arp_hdr->target_ip);
@@ -291,7 +292,6 @@ int main(int argc, char* argv[]) {
 
 	for (auto& th : threads) th.join();
 
-	free(packet);
 	free(arp_hdr);
 	free(eth_hdr);
 	pcap_close(handle);
