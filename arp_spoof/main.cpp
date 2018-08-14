@@ -193,6 +193,7 @@ void* _func(u_char* packet, uint8_t* my_mac, int packet_size) {
 				}
 			}
 		}
+		sleep(1);
 	}
 	free(copied);
 	pcap_close(handle);
@@ -286,7 +287,6 @@ int main(int argc, char* argv[]) {
 				}
 			}
 		}
-		sleep(1);
 	}
 
 	for (auto& th : threads) th.join();
