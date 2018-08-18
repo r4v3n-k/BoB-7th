@@ -1,5 +1,6 @@
-#include <iostream>
 #include <cstdio>
+#include <iostream>
+#include <string>
 #include <stdlib.h>
 #include <unistd.h>
 #include <netinet/in.h>
@@ -10,7 +11,8 @@
 #include <stdint.h>
 #include <linux/ip.h>
 #include <linux/tcp.h>
-#include <string>
+#include <sstream>
+
 using namespace std;
 
 void dump(unsigned char* buf, int size) {
@@ -95,7 +97,7 @@ static int cb(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
 	printf("ip_hdr_sz=%d, tcp_hdr_sz=%d\n", ip_hdr_sz,tcp_hdr_sz);
 
 	if (ip_hdr->protocol == IPPROTO_TCP) {
-		string _data((unsigned char*)(tcp_hdr+tcp_hdr_sz));
+		string _data((char*)(tcp_hdr+tcp_hdr_sz));
 		string str;
 		istringstream iss(_data);
 		while (getline(iss, str)) {

