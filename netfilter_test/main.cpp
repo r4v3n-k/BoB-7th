@@ -10,8 +10,8 @@
 #include <libnetfilter_queue/libnetfilter_queue.h>
 #include <stdint.h>
 #include <linux/ip.h>
-#include <linux/tcp.h>
 #include <sstream>
+#include <netinet/ether.h>
 
 using namespace std;
 
@@ -22,9 +22,7 @@ void dump(unsigned char* buf, int size) {
             printf("\n");
         printf("%02x ", buf[i]);
     }
-	printf("\n-----------------------------------------\n");
-	printf("data length: %d\n", size);
-	printf("-----------------------------------------\n");
+	printf("\n\n");
 }
 
 /* returns packet id */
@@ -76,7 +74,31 @@ static u_int32_t print_pkt (struct nfq_data *tb)
     ret = nfq_get_payload(tb, &data);
     if (ret >= 0) {
         printf("payload_len=%d ", ret);
-		dump(data, ret);
+		if (ntohs(ph->hw_protocol) == ETHERTYPE_IP) {
+			struct iphdr* ip_hdr = (struct iphdr*) data;
+			if (ip_hdr->protocol == IPPROTO_TCP) {
+				printf("\nAccept\n");
+				string _data((char*)(data+ret));
+				string str;
+				istringstream iss(_data);
+				getline(iss, str);
+				if (str.find("GET / HTTP/1.1") == string::npos) {
+					return id;
+				}else {
+					dump(data, ret);
+					printf("HTTP Header -------------------------\n");
+					cout << str << endl;
+					while (getline(iss, str)) {
+						if (str.find("sex.com") != string::npos) {
+							printf("DROP sex.com\n");
+							return -1;
+						}
+						cout << str << endl;
+					}
+					printf("-------------------------------------\n");
+				}
+			}
+		}
 	}
 
     fputc('\n', stdout);
@@ -89,24 +111,9 @@ static int cb(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
           struct nfq_data *nfa, void *data)
 {
     u_int32_t id = print_pkt(nfa);
-
-	struct iphdr* ip_hdr = (struct iphdr*) (data+sizeof(14));
-	int ip_hdr_sz = ip_hdr->ihl * 4;
-	struct tcphdr* tcp_hdr = (struct tcphdr*) (ip_hdr+ip_hdr_sz);
-	int tcp_hdr_sz = tcp_hdr->doff * 4;
-	printf("ip_hdr_sz=%d, tcp_hdr_sz=%d\n", ip_hdr_sz,tcp_hdr_sz);
-
-	if (ip_hdr->protocol == IPPROTO_TCP) {
-		string _data((char*)(tcp_hdr+tcp_hdr_sz));
-		string str;
-		istringstream iss(_data);
-		while (getline(iss, str)) {
-			if (str.find("sex.com") != string::npos) {
-				printf("DROP sex.com\n");
-				return nfq_set_verdict(qh, id, NF_DROP, 0, NULL);
-			}
-			cout << str << endl;
-		}
+	if (id == -1) {
+		printf("DROP SUCCESS!\n");
+		return nfq_set_verdict(qh, id, NF_DROP, 0, NULL);
 	}
     return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
 }
