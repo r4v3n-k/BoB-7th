@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>질의응답</title>
+  <!-- Tell the browser to be responsive to screen width -->
+  <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+  <!-- Bootstrap 3.3.6 -->
+  <link rel="stylesheet" href="admin/css/bootstrap.min.css">
+	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+	<link rel="stylesheet" type="text/css" href="fonts/pixelfabric-clothes/style.css" />
+	<link rel="stylesheet" href="css/one-page-wonder.min.css"/>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.min.css">
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="admin/dist/css/AdminLTE.min.css">
+  <link rel="stylesheet" href="admin/dist/css/skins/skin-green.min.css">
+	<link rel="stylesheet" href="admin/css/custom.css">
+	<link rel="stylesheet" href="css/custom_main.css">
+	<style>
+		.wrapper {
+			background-color: #ecf0f5;
+		}
+		.main-sidebar {
+			background-color: #222d32;
+		}
+
+		table th {
+			text-align:center;
+		}
+		
+		.list_input {
+    	text-align: center;
+		  border: none;
+		}
+		.paging_simple_numbers {
+			text-align: left;
+		}
+		.navbar {
+			margin:0;
+			background: rgb(0,0,0,.4);
+			opacity:1;
+		}
+
+		.content-header {
+			padding-top:40px;
+		}
+		.navbar-dark .navbar-brand {
+	    color: #fff;
+		}
+		.navbar-custom .navbar-brand {
+			text-transform: uppercase;
+			font-size: 1.5em;
+			letter-spacing: .1rem;
+			font-weight: 700;
+		}
+		.navbar-brand {
+	    display: inline-block;
+			padding-top: .3125rem;
+			padding-bottom: .3125rem;
+			margin-right: 1rem;
+			font-size: 1.25rem;
+			line-height: inherit;
+			white-space: nowrap;
+		}
+
+		@media(min-width: 992px)
+		.navbar-expand-lg>.container, .navbar-expand-lg>.container-fluid {
+	    -ms-flex-wrap: nowrap;
+			    flex-wrap: nowrap;
+		}
+
+		.navbar>.container, .navbar>.container-fluid {
+	    display: -ms-flexbox;
+			-ms-flex-wrap: wrap;
+			flex-wrap: wrap;
+			-ms-flex-align: center;
+			  align-items: center;
+			 -ms-flex-pack: justify;
+			justify-content: space-between;
+		}
+.navbar-nav {
+float:right;
+			list-style: none;
+}
+.navbar-dark .navbar-nav .nav-link {
+	    color: rgba(255,255,255,.5);
+}
+.navbar-nav .nav-link {
+	    padding-right: 0;
+}
+.nav-link {
+	    display: block;
+							     padding: .5rem 1rem;
+}
+.go_back:hover {
+opacity:0.5;
+}
+</style>
+</head>
+<body class="hold-transition skin-green sidebar-mini" style="line-height:2.5em;background:#212529;">
+<? 
+include './menu.html'; 
+$db = dbconn();
+$b_id = $_GET['b_id'];
+if (!is_numeric($b_id)) Error("잘못된 접근입니다.", 2);
+?>
+	<div class="sider-menu">
+  	<div class="content-wrapper" style="margin:0;margin-top:70px;">
+<section class="content-header">
+<a href="qna.html" style="text-decoration:none; text-align:left; color:black" class="go_back"><h4>목록으로</h4></a>
+</section>
+<section class="content">
+	<div class="row">
+		<div class="col-xs-12">
+		<div class="box">
+			<div style="text-align:center">
+				<div class="box-header">
+				</div>
+				<div class="box-body table-responsive" style="overflow-x:hidden;">
+					<div id="example2_wrapper"class="dataTables_wrapperform-inline"role="grid">
+						<div class="row">
+							<div class="col-xs-6"></div>
+							<div class="col-xs-6"></div>
+						</div>
+						<div style="width:700px; margin:auto; padding:50px;">
+						<?
+						$sql = "select b_id, mem_id, m_name, reg_date, content from question_and_ans where b_id={$b_id};";
+						$res = $db->query($sql) or trigger_error($db->error."[$sql]");
+						$detail = $res->fetch_assoc();
+						?>
+						<form action="backend/board/qna/modify_qna.php" method="POST">
+						<input type="hidden" name="b_id" value="<?=$detail['b_id']?>" />
+						<h3 style="text-align:left;">작성자:&nbsp;<?=$detail['m_name']?>(<?=$detail['mem_id']?>)</h3>
+						<h3 style="text-align:left;">날짜:&nbsp;&nbsp;&nbsp;<?=$detail['reg_date']?></h3>
+						<hr>
+						<? if ($member['m_id'] == $detail['mem_id']) { ?>	
+						<textarea name="content" rows="10" cols="85"><?=$detail['content']?></textarea><br><br>
+						<input type="submit" class="btn btn-warning" value="수정하기"> &nbsp;&nbsp;&nbsp;&nbsp;
+						<a href="backend/board/qna/delete_qna.php?b_id=<?=$detail['b_id']?>">
+							<button type="button" class="btn btn-red">삭제</button>
+							</a>
+						<? } else { ?>
+						<p style="font-size:1.2em; margin-top:1.5em; margin-bottom:1em;"><?=$detail['content']?></p><br><br>
+							<? } ?>
+						</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		</div>
+	</div>
+</section>
+</div>
+</div>
+<script src='admin/plugins/jQuery/jquery-2.2.3.min.js'></script>
+<script src='admin/js/bootstrap.min.js'></script>
+<script src='admin/plugins/datatables/jquery.dataTables.js' type='text/javascript'></script>
+<script src='admin/plugins/datatables/dataTables.bootstrap.js' type='text/javascript'></script>
+<script src='admin/dist/js/app.min.js'></script>
+<script type='text/javascript'>
+$(function() {
+	$('#example2').dataTable({
+	  'bPaginate': true,
+		'bLengthChange': false,
+		'bFilter': false,
+		'bSort': true,
+		'bInfo': true,
+		'bAutoWidth': false
+	});
+	$("#write_btn").click(function() {
+			$(".write_qna").css("display", "inline-table").css('z-index', 20001).css("opacity", 1).css("-webkit-transition", 'opacity 1s');
+	});
+
+	$("#cancel_write").click(function() {
+			$(".write_qna").css("display", "none").css('z-index', 0).css("opacity", 0).css("-webkit-transition", 'opacity 1s');
+			});
+});
+
+</script>
+</script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+html, body, .wrapper {
+	min-height: 100%;
+}
+.wrapper {
+	background-color: #ecf0f5;
+}
+
+.main-sidebar {
+	background-color: #222d32;
+}
+
+table th {
+	text-align:center;
+}
+
+.content-wrapper {
+	min-height: 800px;
+}
+
+.custom_modal {
+	background:antiquewhite;
+	padding:30px;
+	box-shadow: 0.8px 0.9px 1.6px 0.7px grey;
+	color: darkslategray;
+	padding: 30px;
+	position: fixed;
+	margin: auto;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	opacity: 0;
+	display:none;
+}
+
+.reg_saler, .reg_wh {
+	width:300px;
+	height:250px;
+}
+
+.reg_saler input[type='text'], .reg_wh input[type='text'] {
+	margin:auto;
+	width:150px;
+	margin-bottom:2em;
+}
+
+.upload_goods {
+	width:300px;
+	height:400px;
+}
+
+.write_qna {
+	width:400px;
+	height:300px;
+	text-align:left;
+}
+
+.write_qna input[type="text"] {
+	margin-bottom:1em;
+}

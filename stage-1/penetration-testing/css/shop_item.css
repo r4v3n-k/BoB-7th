@@ -1,0 +1,50 @@
+body {
+	overflow: hidden;
+	background-color: #191a1b;
+	color: white;
+}
+
+
+.guide, .discount_rate {
+	background: antiquewhite;
+	padding: 30px;
+	box-shadow: 0.8px 0.9px 1.6px 0.7px grey;
+	color: darkslategray;
+	padding: 30px;
+	position: fixed;
+	margin: auto;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	opacity: 0;
+	z-index:20001;
+}
+
+.guide {
+	width:420px;
+	height:230px;
+}
+
+.discount_rate {
+	width:400px;
+	height:300px;
+}
+
+.discount_rate table td {
+	text-align:center;
+	height: 2em;
+}
+
+.discount_rate > p {
+	text-align: center;
+	color:black;
+	font-size:1.2em;
+}
+
+#guide_discnt {
+	color:red;
+	font-weight:bold;
+	cursor:pointer;
+}
+

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+	<meta name="description" content="">
+	<meta name="author" content="">
+	<title>BOB MALL</title>
+	<!-- Bootstrap core CSS -->
+	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+	<link rel="stylesheet" type="text/css" href="fonts/pixelfabric-clothes/style.css" />
+	<link rel="stylesheet" type="text/css" href="css/demo.css">
+	<link rel="stylesheet" type="text/css" href="css/flickity.css">
+	<link rel="stylesheet" type="text/css" href="css/component.css">
+	<link rel="stylesheet" href="css/one-page-wonder.min.css">
+	<link rel="stylesheet" type="text/css" href="./css/simple-line-icons.css">
+	<link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css">
+
+	<!-- javascript -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"></script>
+	<!-- Custom styles for this template i
+	
+	-->
+	<link href="css/custom_main.css" rel="stylesheet">
+	<link href="css/shop_item.css" rel="stylesheet">
+	<style>
+
+		.row_wrapper {
+			width:90%;
+			margin:auto;
+			margin-top: 80px;
+		}
+		
+		.col-md-4 {
+			padding-top:50px;
+		}
+		.col-md-8{
+			text-align:center;
+		}
+		.col-md-8 > img {
+			margin:auto;
+		}
+		.text-w{
+				color:white;
+		}
+		.container {
+margin: 0;
+		}
+	</style>
+</head>
+			<?
+				include 'menu.html'; 
+				if (!$_GET) Error("잘못된 접근입니다.",2);
+				if (!is_numeric($_GET['g_id'])) Error("잘못된 접근입니다.", 2);
+			?>
+			<!-- Page Content -->
+<body>
+	<!-- Navigation -->
+	<div class="row_wrapper">
+		<div class="row">
+		<? include 'backend/board/goods_detail.php' ?>	
+	  		<div class="col-md-8" style="text-algin:center"><br><br>
+				<img class="img-fluid" src="./img/detail/<?=$detail['g_img']?>" alt="<?=$detail['g_id']?>" style="width: 60%;">
+	  		</div>
+	  		<div class="col-md-4">
+				<h3 class="my-3 text-w">제품이름</h3>
+				<p class="text-w"><?=$detail['g_name']?></p>
+				<h3 class="my-3 text-w">제품수량</h3>
+				<p class="text-w"><?=$detail['g_amt']?></p>
+				<h3 class="my-3 text-w">가격<sup id="guide_discnt">?</sup>
+				<span class="text-w"style="font-size:0.5em;">(현재누적할인율: <?=$accu_discnt?>%)</span>
+				</h3>
+				<p class="text-w"><?=$detail['g_price']?></p>
+				<form action="backend/board/buy.php" method="POST">
+		  			<div class="form-group">
+						<input type="hidden" name="discnt" value="<?=$accu_discnt?>"/>
+						<input type="hidden" name="g_id" value="<?=$detail['g_id']?>"/>
+						<input type="hidden" name="g_price" value="<?=$detail['g_price']?>"/>
+						<label class="text-w"for="pwd">구매희망갯수:</label>
+						<input type="number" name="g_cnt" class="form-control" style="width:150px;" id="count">
+					</div>
+					<button type="submit" class="btn btn-primary">구매하기</button>&nbsp;&nbsp;
+					<span id="return" class="text-w"><input name="return" type="checkbox"/>&nbsp;반품비용 포기</span>
+					<div class="guide">
+					<p>귀하는 반품포기에 대한 선택적인 제공에 대해 거부할 수 있습니다. 단, 관련 할인(0.01%)의 혜택이 적용되지 않습니다.</p>
+					<ul>
+					<li>당일 배송은 할인이 적용되지 않습니다.</li>
+					<li>기본 배송을 원하시면 <strong>0.05%</strong>가 할인됩니다.</li>
+					<li>급하지 않으시다면 <strong>0.07%</strong>가 할인됩니다.</li>
+					</ul>
+					</div>
+					<div class="discount_rate">
+					<p>복수 구매에 따른 할인율</p>
+					<table width="100%">
+					<tr style="font-weight:bold">
+					<td width="30%">구매수량</td>
+					<td width="40%">개당 추가 할인율</td>
+					<td width="30%">누적 할인율</td>
+					</tr>
+					<tr>
+					<td>1~2</td>
+					<td>0%</td>
+					<td>0%</td>
+					</tr>
+					<tr>
+					<td>3~5</td>
+					<td>0.1%</td>
+					<td>1.5%</td>
+					</tr>
+					<tr>
+					<td>6~7</td>
+					<td>0.2%</td>
+					<td>5.0%</td>
+					</tr>
+					<tr>
+					<td>8~9</td>
+					<td>0.3%</td>
+					<td>7.5%</td>
+					</tr>
+					<tr>
+					<td>10~</td>
+					<td>0.4%</td>
+					<td>8.6%</td>
+					</tr>
+					</table>
+					</div>
+				</form>
+	  		</div>
+		</div>
+	</div>
+	<script>
+	$("#return").mouseenter(function() {
+			$(".guide").css("opacity", 1).css("-webkit-transition", 'opacity 1s');
+	});
+	$("#return").mouseleave(function() {
+			$(".guide").css("opacity", 0).css("-webkit-transition", 'opacity 1s');
+	});
+	$("#guide_discnt").mouseenter(function() {
+			$(".discount_rate").css("opacity", 1).css("-webkit-transition", 'opacity 1s');
+	});
+	$("#guide_discnt").mouseleave(function() {
+			$(".discount_rate").css("opacity", 0).css("-webkit-transition", 'opacity 1s');
+	});
+	
+	</script>
+</body>
+</html>

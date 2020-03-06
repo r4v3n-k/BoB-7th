@@ -1,0 +1,47 @@
+<? include 'backend/board/list.php' ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"></script>
+
+    <!-- Custom styles for this template -->
+    <link href="./css/shop-item.css" rel="stylesheet">
+
+</head>
+
+<body>
+    <!-- Page Content -->
+    <div class="container">
+        <div class="row text-center text-lg-left">
+	
+	<? while($list = $res->fetch_assoc()) { ?>
+            <div class="col-lg-3 col-md-4 col-xs-6">
+                <a href="#" class="d-block mb-4 h-100">
+                    <img class="img-fluid img-thumbnail" src="./img/thumbnail/<?=$list['g_img']?>" alt="<?=$list['g_id']?>">
+		    <h6><?=$list['g_name']?></h6>
+		    <h6><?=$list['g_price']?></h6>
+                </a>
+            </div>
+	<? } ?>
+        </div>
+
+    </div>
+    <!-- /.container -->
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="vendor/jquery/jquery.min.js"></script>
+    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

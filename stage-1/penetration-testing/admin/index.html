@@ -1,0 +1,285 @@
+<?
+include '../backend/lib/functions.php';
+$member = member();
+if (empty($member)) Error("어딜 함부로 스읍,", 3);
+if ($member['m_id'] != 'bonobono7') Error("오지마 새꺄", 6);
+?>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>관리자 정보</title>
+  <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+  <!-- Bootstrap 3.3.6 -->
+  <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.min.css">
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- Theme style -->
+	<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+  <link rel="stylesheet" href="dist/css/AdminLTE.min.css">
+  <link rel="stylesheet" href="dist/css/skins/skin-green.min.css">
+	<link href="css/morris/morris.css" rel="stylesheet" />
+	<link href="css/jvectormap/jquery-jvectormap-1.2.2.css" rel="stylesheet" />
+	<script src="http://code.jquery.com/jquery-latest.js"></script>
+	<style>
+		hr {
+			border-width: thin;
+    	margin: auto;
+			margin-top: 50px;
+			border-color: #dd4b39;
+			width: 90%;
+		}
+	</style>
+</head>
+<body class="hold-transition skin-green sidebar-mini">
+	<div class="wrapper">
+  	<header class="main-header">
+			<a href="../index.html" class="logo">
+	  		<span class="logo-mini"><b>B</b></span>
+	  		<span class="logo-lg"><b>BoB Mall</b></span>
+			</a>
+			<!-- Header Navbar -->
+			<nav class="navbar navbar-static-top" role="navigation">
+	  	<!-- Sidebar toggle button-->
+	  		<a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+					<span class="sr-only">Toggle navigation</span>
+	  		</a>
+	  		<!-- Navbar Right Menu -->
+	  		<div class="navbar-custom-menu">
+					<ul class="nav navbar-nav">
+						<li><a href="../backend/member/logout.php">Logout을 생활화 합시다.</a></li>
+		  <!-- Control Sidebar Toggle Button -->
+		  			<li>
+							<a href="#" data-toggle="control-sidebar"><i class="fa fa-gears"></i></a>
+		 				</li>
+					</ul>
+	  		</div>
+			</nav>
+  	</header>
+  <!-- Left side column. contains the logo and sidebar -->
+  <aside class="main-sidebar">
+
+	<!-- sidebar: style can be found in sidebar.less -->
+	<section class="sidebar">
+
+	  <!-- Sidebar user panel (optional) -->
+	  <div class="user-panel">
+		<div class="pull-left image">
+		  <img src="../img/thumbnail/bonobono.jpg" class="img-circle" alt="User Image">
+		</div>
+		<div class="pull-left info">
+		  <p>관리자</p>
+		  <!-- Status -->
+		  <a href="#"><i class="fa fa-circle text-success"></i> Online</a>
+		</div>
+	  </div>
+
+	  <!-- search form (Optional) -->
+	  <form action="#" method="get" class="sidebar-form">
+		<div class="input-group">
+		  <input type="text" name="q" class="form-control" placeholder="Search...">
+			  <span class="input-group-btn">
+				<button type="submit" name="search" id="search-btn" class="btn btn-flat" onclick="javascript:window.alert('fishing U >_<');">
+					<i class="fa fa-search"></i>
+				</button>
+			  </span>
+		</div>
+	  </form>
+	  <!-- /.search form -->
+	  <!-- Sidebar Menu -->
+	  <ul class="sidebar-menu">
+			<li class="header">관리자페이지</li>
+			<!-- Optionally, you can add icons to the links -->
+			<li class="active"><a href="index.html"><i class="fa fa-link"></i> <span>관리자 정보</span></a></li>
+			<li><a href="mgmt_member.html"><i class="fa fa-link"></i> <span>회원관리</span></a></li>
+			<li class="treeview">
+		  	<a href="#"><i class="fa fa-link"></i> <span>도매업자관리</span>
+					<span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span>
+				</a>
+		  	<ul class="treeview-menu">
+					<li><a href="mgmt_saler.html">도매업자 조회</a></li>
+					<li><a href="mgmt_trade.html">거래 목록 조회</a></li>
+		  	</ul>
+			</li>
+			<li><a href="mgmt_goods.html"><i class="fa fa-link"></i> <span>상품관리</span></a></li>
+			<li><a href="mgmt_order.html"><i class="fa fa-link"></i> <span>주문관리</span></a></li>
+			<li><a href="#"><i class="fa fa-link"></i> <span>팝업관리</span></a></li>
+			<li><a href="#"><i class="fa fa-link"></i> <span>기간별매출통계</span></a></li>
+			<li><a href="#"><i class="fa fa-link"></i> <span>기간별상품통계</span></a></li>
+			<li><a href="#"><i class="fa fa-link"></i> <span>접속통계</span></a></li>
+	  </ul>
+	  <!-- /.sidebar-menu -->
+	</section>
+	<!-- /.sidebar -->
+  </aside>
+	<div class="sider-menu" id="주문관리">
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+		<section class="content-header">
+		</section>
+  	<!-- Content Section -->
+		<section class="content">
+<div class="box box-danger" id="loading-example">
+<div class="box-header">
+<div class="pull-right box-tools">
+<button class="btn btn-danger btn-sm refresh-btn" data-toggle="tooltip" title="Reload"><i class="fa fa-refresh"></i></button>
+<button class="btn btn-danger btn-sm" data-widget='collapse' data-toggle="tooltip" title="Collapse"><i class="fa fa-minus"></i></button>
+<button class="btn btn-danger btn-sm" data-widget='remove' data-toggle="tooltip" title="Remove"><i class="fa fa-times"></i></button>
+</div><!-- /. tools -->
+<i class="fa fa-cloud"></i>
+<h3 class="box-title">Server Load</h3>
+</div><!-- /.box-header -->
+<div class="box-body no-padding">
+<div class="row">
+<div class="col-sm-7">
+<div class="chart" id="bar-chart" style="height: 250px;"></div>
+</div>
+<div class="col-sm-5">
+<div class="pad">
+<div class="clearfix">
+<span class="pull-left">Bandwidth</span>
+<small class="pull-right">10/200 GB</small>
+</div>
+<div class="progress xs">
+<div class="progress-bar progress-bar-green" style="width: 70%;"></div>
+</div>
+<div class="clearfix">
+<span class="pull-left">Transfered</span>
+<small class="pull-right">10 GB</small>
+</div>
+<div class="progress xs">                                                    
+<div class="progress-bar progress-bar-red" style="width: 70%;"></div>
+</div>
+<div class="clearfix">
+<span class="pull-left">Activity</span>
+<small class="pull-right">73%</small>
+</div>
+<div class="progress xs">
+<div class="progress-bar progress-bar-light-blue" style="width: 70%;"></div>
+</div>
+<div class="clearfix">
+<span class="pull-left">FTP</span>
+<small class="pull-right">30 GB</small>
+</div>
+<div class="progress xs">
+<div class="progress-bar progress-bar-aqua" style="width: 70%;"></div>
+</div>
+<p>
+<button class="btn btn-default btn-sm"><i class="fa fa-cloud-download"></i> Generate PDF</button>
+</p>
+</div>
+</div>
+</div>
+</div>
+<div class="box-footer">
+<div class="row">
+<div class="col-xs-4 text-center" style="border-right: 1px solid #f4f4f4">
+<input type="text" class="knob" data-readonly="true" value="80" data-width="60" data-height="60" data-fgColor="#f56954"/>
+<div class="knob-label">CPU</div>
+</div>
+<div class="col-xs-4 text-center" style="border-right: 1px solid #f4f4f4">
+<input type="text" class="knob" data-readonly="true" value="50" data-width="60" data-height="60" data-fgColor="#00a65a"/>
+<div class="knob-label">Disk</div>
+</div>
+<div class="col-xs-4 text-center">
+<input type="text" class="knob" data-readonly="true" value="30" data-width="60" data-height="60" data-fgColor="#3c8dbc"/>
+<div class="knob-label">RAM</div>
+</div>
+</div><hr><br><br>
+				<h3 style="text-align:center;">관리자 정보 변경</h3>
+
+	<div class="w3-content w3-container w3-margin-top">
+		<div class="w3-container w3-card-4" style="width:500px; margin:auto;">
+			<div class="w3-center w3-large w3-margin-top"></div>
+			<div>
+				<form id="admin_form" action="#" method="post">
+					<p><label>ID</label><input class="w3-input" type="text" id="id" name="id" readonly value="${ member.id }"></p>
+					<p><label>Email</label><input class="w3-input" type="text" id="email" name="email" value="${ member.email }" required></p>
+					<input type="hidden" name="id" value="${ member.id }">
+					<p><label>Password</label><input class="w3-input" id="old_pw" name="old_pw" type="password" required></p>
+					<p><label>New Password</label><input class="w3-input" id="pw" name="pw" type="password" required></p>
+					<p><label>Confirm</label><input class="w3-input" type="password" id="pw2" type="password" required></p>
+					<p class="w3-center"><button type="submit" id="joinBtn" class="w3-button w3-block w3-black w3-ripple w3-margin-top w3-round">변경하기</button></p>
+				</form>																																																																										</div>
+		</div>
+	</div><br><br>
+</div>
+</div>
+		</section>
+		<!-- Content Section End -->
+  </div>
+  <footer class="main-footer">
+	<div class="pull-right hidden-xs">
+	  서비스맵
+	</div>
+	<strong><center>BoB Mall &copy; 2004 <a href="#">Company</a>.</center></strong> 
+  </footer>
+  <aside class="control-sidebar control-sidebar-dark">
+	<ul class="nav nav-tabs nav-justified control-sidebar-tabs">
+	  <li class="active"><a href="#control-sidebar-home-tab" data-toggle="tab"><i class="fa fa-home"></i></a></li>
+	  <li><a href="#control-sidebar-settings-tab" data-toggle="tab"><i class="fa fa-gears"></i></a></li>
+	</ul>
+	<div class="tab-content">
+	  <div class="tab-pane active" id="control-sidebar-home-tab">
+		<h3 class="control-sidebar-heading">Recent Activity</h3>
+		<ul class="control-sidebar-menu">
+		  <li>
+			<a href="javascript:;">
+			  <i class="menu-icon fa fa-birthday-cake bg-red"></i>
+			  <div class="menu-info">
+				<h4 class="control-sidebar-subheading">14th anniversary</h4>
+				<p>of BoB Mall's establishment</p>
+			  </div>
+			</a>
+		  </li>
+		</ul>
+		<h3 class="control-sidebar-heading">Tasks Progress</h3>
+		<ul class="control-sidebar-menu">
+		  <li>
+			<a href="javascript:;">
+			  <h4 class="control-sidebar-subheading">
+				Custom Template Design
+				<span class="pull-right-container">
+				  <span class="label label-danger pull-right">70%</span>
+				</span>
+			  </h4>
+
+			  <div class="progress progress-xxs">
+				<div class="progress-bar progress-bar-danger" style="width: 70%"></div>
+			  </div>
+			</a>
+		  </li>
+		</ul>
+	  </div>
+	  <div class="tab-pane" id="control-sidebar-stats-tab">Stats Tab Content</div>
+	  <div class="tab-pane" id="control-sidebar-settings-tab">
+		<form method="post">
+		  <h3 class="control-sidebar-heading">General Settings</h3>
+
+		  <div class="form-group">
+			<label class="control-sidebar-subheading">
+			  Report panel usage
+			  <input type="checkbox" class="pull-right" checked>
+			</label>
+
+			<p>
+			  Some information about this general settings option
+			</p>
+		  </div>
+		</form>
+	  </div>
+	</div>
+  </aside>
+  <div class="control-sidebar-bg"></div>
+</div>
+<!-- jQuery 2.2.3 -->
+<script src="plugins/jQuery/jquery-2.2.3.min.js"></script>
+<!-- Bootstrap 3.3.6 -->
+<script src="js/bootstrap.min.js"></script>
+<!-- AdminLTE App -->
+<script src="dist/js/app.min.js"></script>
+</body>
+</html>

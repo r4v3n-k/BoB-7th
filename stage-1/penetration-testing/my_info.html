@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>마이페이지</title>
+	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="css/AdminLTE.css"/>
+	<style>
+		.mgT20 tr th, input[type="text"], input[type="mail"] {
+			text-align:center;
+		}
+		.mgT tr th {
+padding: 0.5em;
+		}
+	</style>
+</head>
+<body class="hold-transition skin-green sidebar-mini" style="background: #212529;">
+<? include 'menu.html'; ?>
+<div class="wrapper">
+  <div id="Container" style="margin-top:50px;">    
+    <div id="Contents">     
+      <div class="mypage-ix" style="border:none;">  
+        <div class="mypage-lnb">
+          <ul>
+            <li class="treeview">  
+            <li>
+							<h2>MY 쇼핑</h2>
+              <ul class="treeview-menu">          
+                <li><a href="my_order.html">구매내역</a></li>
+                <li><a href="my_sale.html">할인내역</a></li>
+              </ul>
+            </li>
+            <li class="treeview">
+            <li>
+							<h2>MY 활동</h2>
+            	<a href="#">
+								<i class="fa fa-link"></i> 
+                <span class="pull-right-container">
+									<i class="fa fa-angle-left pull-right"></i>
+								</span>
+              </a>
+              <ul class="treeview-menu">
+              	<li><a href="qna.html">문의하기</a></li>
+             		<li><a href="my_qna_list.html">문의내역</a></li>
+              </ul>
+            </li>
+            <li class="treeview">
+            	<li>
+								<h2>MY  정보</h2>
+                <a href="#">
+									<i class="fa fa-link"></i> 
+                	<span class="pull-right-container">
+										<i class="fa fa-angle-left pull-right"></i>
+									</span>
+                </a>
+                <ul class="treeview-menu">
+                  <li><a href="my_info.html" method="POST">개인정보확인/수정</a></li>
+              	</ul>
+              </li>
+            </li>
+          </ul>
+				</div>
+				<script src="AdminLTE.css"></script>
+				<script>
+					$(window).ready(function(){
+						mypage.side.init();
+						mypage.header.init();
+						});
+				</script>
+			<div class="mypage-conts">
+				<script>
+					$(window).ready(function(){
+					});
+				</script>       
+				<br>
+				<div class="title-area"><h2 class="tit">개인정보확인/수정</h2></div>
+      	<div class="area-over" id="cousel">
+      	  <div class="left" style="width:100%;">
+        <form id="cnslRegForm" action="backend/mypage/modify_myinfo.php" method="POST">
+    <table class="board-write-1s mgT40">
+      <caption>개인정보확인수정 </caption>
+      <colgroup>
+        <col style="width:10%;">
+        <col style="width:75%;">
+      </colgroup>
+      <tbody>
+          <tr>          
+            <tr class="textarea">
+            <th scope="col"><label for="TypeInquiry">회원아이디</label></th>
+            <td>
+              <input type="text" id="InputTextarea" name="m_id" value="<?=$member['m_id']?>" readonly style="width:50%;height:45px;"></textarea>
+            </td>
+          </tr>
+          <tr>          
+            <tr class="textarea">
+            <th scope="col"><label for="TypeInquiry">성명</label></th>
+            <td>
+              <input type="text" id="InputTextarea" name="m_name" value="<?=$member['m_name']?>" style="width:50%;height:45px;"></textarea>
+            </td>
+          </tr>
+          <tr>          
+            <tr class="textarea">
+            <th scope="col"><label for="TypeInquiry">새 비밀번호</label></th>
+            <td>
+              <input type="password" id="InputTextarea" name="m_pw" style="width:50%;height:45px;"></textarea>
+            </td>
+          </tr>
+          <tr>          
+            <tr class="textarea">
+            <th scope="col"><label for="TypeInquiry">비밀번호 확인</label></th>
+            <td>
+              <input type="password" id="InputTextarea" name="chk_pw" style="width:50%;height:45px;"></textarea>
+            </td>
+          </tr>
+          <tr>          
+            <tr class="textarea">
+            <th scope="col"><label for="TypeInquiry">이메일</label></th>
+            <td>
+              <input type="mail" id="InputTextarea" name="m_email" value="<?=$member['m_email']?>"  style="width:50%;height:45px;"></textarea>
+            </td>
+          </tr>
+          <tr>          
+            <tr class="textarea">
+            <th scope="col"><label for="TypeInquiry">연락처</label></th>
+            <td>
+              <input type="text" id="InputTextarea" name="m_phone" value="<?=$member['m_phone']?>" cols="1" rows="1"  style="width:50%;height:45px;"></textarea>
+            </td>
+          </tr>
+          <tr>          
+            <tr class="textarea">
+            <th scope="col"><label for="TypeInquiry">주소</label></th>
+            <td>
+              <input type="text" id="InputTextarea" name="m_addr" value="<?=$member['m_addr']?>"  style="width:50%;height:45px;"></textarea>
+            </td>
+          </tr>
+        	</tr></tr></tr></tr></tr></tr></tr></tr>
+				</tbody>
+			</table>
+			<div style="text-align:center">
+				<input type="submit" class="btn btn-warning" value="수정" style="width:150px;"/>
+			</div>
+					</form>
+ 		</div>
+	</div>
+</div>
+</div>
+</div>
+<div id="Footer">
+  <div class="oneConts">
+  	<div class="conts">
+    	<div class="twoConts">
+      	<div class="conts">
+        	<ul class="list-menu">
+        		<li><a class="prvsuser" href="qna.html">공지사항</a></li>
+          	<li><a class="cyberAudit" href="#">이용약관</a></li>
+          	<li><a class="faqList" href="#">고객센터</a></li>
+        	</ul>
+        </div>
+			</div>
+		</div>
+	</div>
+  <ul class="list-area" style="min-height:250px;">
+  	<li>
+    <h2>BoB Mall 주식회사</h2>
+    	<p>대표이사 : 한철규</p>
+      <p>사업자등록번호 : 111-98-31531</p>
+      <p>통신판매업신고 : 2017 - 서울가디 - 0727 <br></p>
+      <p>Tel : 02-111-8956</p>
+		</li>
+    <li>
+    	<ul class="list-link">
+      	<li><a href="#">이용약관</a><a href="#"</a></li>
+        <li><a href="#">고객센터 | 전자금융거래분쟁처리담당</a></li>
+        <li><a href="#">주소 :  서울특별시  금천구 서부샛길 606 <br>대성디폴리스 A동 27층 </a></li>
+        <li><a href="#">Fax : 02-111-8956 | email: bobmall@gmail.com  &gt; </a></li>
+      </ul>
+    </li>
+    <li>
+    	<h2>은행 서비스</h2>
+  		<p>고객님의 안전거래를 위해 은행 거래시<br> 주의사항을 읽어주세요.</p>
+    </li>
+	</ul>
+</div>
+</body>
+</html>

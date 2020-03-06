@@ -1,0 +1,30 @@
+body {
+	overflow-x: hidden;
+}
+a {
+	text-decoration:none;
+	color:black;
+	text-align:center;
+}
+
+a > img {
+	margin-bottom: 0.5em;
+}
+.grid__item > a {
+	text-decoration:none;
+}
+.grid__item > a:hover {
+	text-decoration:none;
+}
+
+.py-3 {
+	position: absolute;
+	bottom: 0px;
+	width: 100%;
+}
+
+.navbar {
+	background-color: #191a1b;
+	opacity:0.7;
+	height:10%;
+}

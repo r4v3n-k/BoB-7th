@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<!-- Standard Meta -->
+	<meta charset="utf-8"/>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+	<!-- Site Properties -->
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"></script>
+		
+	<!-- Stylesheets -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.1/css/font-awesome.min.css">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css">
+	<link rel="stylesheet" href="./css/member.css"/>
+</head>
+<body style="background:#212529; color:white">
+<div class="container">
+	<div class="login_img">
+		<img src="img/thumbnail/bonobono.jpg" alt="">
+	</div>
+	<form class="form-horizontal" role="form" method="POST" action="backend/member/login.php">
+		<div class="row">
+			<div class="col-md-3"></div>
+			<div class="col-md-6">
+				<h2>로그인</h2>	<hr>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-3"></div>
+			<div class="col-md-6">
+				<div class="form-group has-danger">
+					<label class="sr-only" for="m_id">ID</label>
+					<div class="input-group mb-2 mr-sm-2 mb-sm-0">
+						<div class="input-group-addon" style="width: 2.6rem">ID</div>
+						<input type="text" name="m_id" class="form-control" maxlength=20 id="m_id" placeholder="아이디를 입력해주세요." required autofocus>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-3"></div>
+			<div class="col-md-6">
+				<div class="form-group">
+					<label class="sr-only" for="m_pw">Password</label>
+					<div class="input-group mb-2 mr-sm-2 mb-sm-0">
+						<div class="input-group-addon" style="width: 2.6rem">PW</div>
+						<input type="password" name="m_pw" class="form-control" id="m_pw" maxlength=20  placeholder="비밀번호를 입력해주세요." required>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row" style="padding-top: 1rem">
+			<div class="col-md-3"></div>
+			<div class="col-md-6">
+				<button type="submit" class="btn btn-success"><i class="fa fa-sign-in"></i> Login</button>
+				<a class="btn btn-link" href="signup.html">회원가입</a>
+				<a class="btn btn-link" href="index.html">BoB Mall!</a>
+			</div>
+		</div>
+	</form>
+</div>
+</body>
+</html>

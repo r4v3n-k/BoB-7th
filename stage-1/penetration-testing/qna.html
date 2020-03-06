@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>질의응답</title>
+  <!-- Tell the browser to be responsive to screen width -->
+  <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+  <!-- Bootstrap 3.3.6 -->
+  <link rel="stylesheet" href="admin/css/bootstrap.min.css">
+	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+	<link rel="stylesheet" type="text/css" href="fonts/pixelfabric-clothes/style.css" />
+	<link rel="stylesheet" href="css/one-page-wonder.min.css"/>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.min.css">
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="admin/dist/css/AdminLTE.min.css">
+  <link rel="stylesheet" href="admin/dist/css/skins/skin-green.min.css">
+	<link rel="stylesheet" href="admin/css/custom.css">
+	<link rel="stylesheet" href="css/custom_main.css">
+	<style>
+		.wrapper {
+			background-color: #ecf0f5;
+		}
+		.main-sidebar {
+			background-color: #222d32;
+		}
+
+		table th {
+			text-align:center;
+		}
+		
+		.paging_simple_numbers {
+			text-align: left;
+		}
+		.navbar {
+			margin:0;
+			background: rgb(0,0,0,.4);
+			opacity:1;
+		}
+
+		.content-header {
+			padding-top:40px;
+		}
+		.navbar-custom .navbar-brand {
+			text-transform: uppercase;
+			font-size: 1.5em;
+			letter-spacing: .1rem;
+			font-weight: 700;
+		}
+		.navbar-brand {
+	    display: inline-block;
+			padding-top: .3125rem;
+			padding-bottom: .3125rem;
+			margin-right: 1rem;
+			font-size: 1.25rem;
+			line-height: inherit;
+			white-space: nowrap;
+		}
+
+		@media(min-width: 992px)
+		.navbar-expand-lg>.container, .navbar-expand-lg>.container-fluid {
+	    -ms-flex-wrap: nowrap;
+			    flex-wrap: nowrap;
+		}
+
+		.navbar>.container, .navbar>.container-fluid {
+	    display: -ms-flexbox;
+							 -ms-flex-wrap: wrap;
+			flex-wrap: wrap;
+							-ms-flex-align: center;
+			align-items: center;
+			 				-ms-flex-pack: justify;
+			justify-content: space-between;
+		}
+.navbar-nav {
+			float:right;
+			list-style: none;
+}
+.navbar-nav .nav-link {
+	    padding-right: 0;
+}
+.nav-link {
+	    display: block;
+			 padding: .5rem 1rem;
+}
+.row {
+	width:100%;
+}
+</style>
+</head>
+<body class="hold-transition skin-green sidebar-mini" style="background-color:#212529; line-height:2.5em">
+<? 
+include './menu.html'; 
+$db = dbconn();
+?>
+	<div class="sider-menu" style="margin-top:70px">
+  	<div class="content-wrapper" style="margin:0px; height:710px;">
+<section class="content-header">
+<h1>질의응답게시판</h1>
+</section>
+<section class="content">
+	<div class="row">
+		<div class="col-xs-12" style="position:absolute;">
+		<div class="box">
+			<div>
+				<div class="box-body table-responsive">
+					<table id="example2" class="table table-botderedtable-hover dataTable" style="text-align:center;align:center;" aria-describedby="example2_infi">
+							<thead>
+								<tr>
+									<th class="sorting_asc"role="columnheader"tabindex="0"aria-controls="example2"rowspan="1"colspan="1"aria-sort="ascending"aria-label="Renderingengine: activate to sort column descending">게시글 번호</th>
+									<th class="sorting" role="columnheader" tabindex="0" aria-controls="example2" rowspan="1" colspan="1" aria-label="Browser: activate to sort column ascending">제목</th>
+									<th class="sorting" role="columnheader" tabindex="0" aria-controls="example2" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">작성자</th>
+									<th class="sorting" role="columnheader" tabindex="0" aria-controls="example2" rowspan="1" colspan="1" aria-label="Engine version: activate to sort column ascending">날짜</th>
+									</tr>
+							</thead>
+							<tbody role="alert"aria-live="polite"aria-relevant="all">
+							<? 
+							include 'backend/board/qna/list_of_qna.php'; 
+							$i = mysqli_num_rows($res);
+							while($list = $res->fetch_assoc()){
+							?>
+								<tr class="odd">
+									<td class=""><?=$i?></td>
+									<td class=""><a href="qna_detail.html?b_id=<?=$list['b_id']?>">질문입니다~</td>
+						 			<td class=""><?=$list['m_name']?></td>
+									<td class=""><?=$list['reg_date']?></td>
+								</tr>
+								<? $i--; } ?>
+							</tbody>
+						</table>
+								<div style="text-align:right; padding-bottom:2em" class="col-xs-12">
+								<button class="btn btn-warning" id="write_btn" style="z-index:20002">문의하기</button>
+								</div><br>
+								<div class="custom_modal write_qna">
+
+									<form action="backend/board/qna/write_qna.php" method="POST">
+									작성자&nbsp;<input type="text" name="m_name" value="<?=$member['m_name']?>(<?=$member['m_id']?>)" readonly><br>
+										제목 &nbsp;&nbsp;&nbsp;&nbsp;<input type="text" value="질문입니다~" readonly><br>
+										<textarea name="content" rows="6" cols="45" style="margin-bottom:1em"></textarea><br>
+										<div style="text-align:center;">
+										<input type="submit" class="btn btn-warning" value="등록">
+										<button style="margin-left:30px;" type="button" id="cancel_qna" class="btn btn-red">취소</button>
+								</div>
+							</div>
+						</div>
+					</div>
+			</div>
+		</div>
+		</div>
+	</div>
+</section>
+</div>
+</div>
+<script src='admin/plugins/jQuery/jquery-2.2.3.min.js'></script>
+<script src='admin/js/bootstrap.min.js'></script>
+<script src='admin/plugins/datatables/jquery.dataTables.js' type='text/javascript'></script>
+<script src='admin/plugins/datatables/dataTables.bootstrap.js' type='text/javascript'></script>
+<script src='admin/dist/js/app.min.js'></script>
+<script type='text/javascript'>
+$(function() {
+	$('#example2').dataTable({
+	  'bPaginate': true,
+		'bLengthChange': false,
+		'bFilter': false,
+		'bSort': true,
+		'bInfo': false,
+		'bAutoWidth': false
+	});
+	$("#write_btn").click(function() {
+			$(".write_qna").css("display", "inline-table").css('z-index', 20001).css("opacity", 1).css("-webkit-transition", 'opacity 1s');
+	});
+	$("#cancel_qna").click(function() {
+			$(".write_qna").css("display", "none").css('z-index', 0).css("opacity", 0).css("-webkit-transition", 'opacity 1s');
+			});
+});
+
+</script>
+</body>
+</html>
